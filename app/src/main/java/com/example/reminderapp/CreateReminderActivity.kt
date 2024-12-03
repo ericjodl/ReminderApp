@@ -1,31 +1,43 @@
 package com.example.reminderapp
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
-import androidx.appcompat.app.AppCompatActivity
-import com.example.reminderapp.databinding.CreateReminderActivityBinding
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 
 class CreateReminderActivity : AppCompatActivity() {
+
+    private lateinit var etTitle: EditText
+    private lateinit var etDescription: EditText
+    private lateinit var btnSave: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.create_reminder_activity)
 
-        val editText = findViewById<EditText>(R.id.etTitle)
-        val btnSave = findViewById<Button>(R.id.btnSaveReminder)
+        // Eingabefelder und Button referenzieren
+        etTitle = findViewById(R.id.reminderTitle)
+        etDescription = findViewById(R.id.reminderDescription)
+        btnSave = findViewById(R.id.btnSaveReminder)
 
+        // Speicher-Button klickbar machen
         btnSave.setOnClickListener {
-            val reminderText = editText.text.toString()
+            val title = etTitle.text.toString().trim()
+            val description = etDescription.text.toString().trim()
 
-            if (reminderText.isNotEmpty()) {
-                val intent = Intent()
-                intent.putExtra("REMINDER_TEXT", reminderText)
-                setResult(RESULT_OK, intent)
-                finish() // Schließe die Activity und kehre zurück
+            if (title.isNotEmpty()) {
+                // Daten zurückgeben
+                val intent = Intent().apply {
+                    putExtra("REMINDER_TITLE", title)
+                    putExtra("REMINDER_DESCRIPTION", description)
+                }
+                setResult(Activity.RESULT_OK, intent)
+                finish() // Activity schließen
             } else {
-                Toast.makeText(this, "Bitte einen Text eingeben", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Titel darf nicht leer sein", Toast.LENGTH_SHORT).show()
             }
         }
     }

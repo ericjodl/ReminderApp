@@ -1,34 +1,37 @@
 package com.example.reminderapp
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.reminderapp.data.Reminder
+import com.example.reminderapp.databinding.ItemReminderBinding
 
-class ReminderAdapter(private var reminders: MutableList<String>) :
+class ReminderAdapter(private var reminders: MutableList<Reminder>) :
     RecyclerView.Adapter<ReminderAdapter.ReminderViewHolder>() {
 
-    class ReminderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val textViewReminder: TextView = itemView.findViewById(R.id.textViewReminder)
+    fun updateData(newReminders: List<Reminder>) {
+        reminders.clear()
+        reminders.addAll(newReminders)
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReminderViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_reminder, parent, false)
-        return ReminderViewHolder(view)
+        val binding = ItemReminderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ReminderViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ReminderViewHolder, position: Int) {
-        holder.textViewReminder.text = reminders[position]
+        holder.bind(reminders[position])
     }
 
     override fun getItemCount(): Int = reminders.size
 
-    // Neue Methode, um Daten hinzuzufügen und den Adapter zu aktualisieren
-    fun updateData(newReminder: String) {
-        reminders.add(newReminder)
-        notifyItemInserted(reminders.size - 1) // Nur das neue Element aktualisieren
+    class ReminderViewHolder(private val binding: ItemReminderBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(reminder: Reminder) {
+            binding.reminderTitle.text = reminder.title
+            binding.reminderDescription.text = reminder.description
+        }
     }
 }
-
