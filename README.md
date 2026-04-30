@@ -27,11 +27,31 @@ Fuer MP3-Import und MP3-Export wird zusaetzlich `ffmpeg` benoetigt (https://www.
 
 ## Standalone EXE bauen
 
+### Variante A: Lokal auf Windows
+
 ```bat
 build_windows.bat
 ```
 
 Erstellt `dist\RapStudio.exe`.
+
+### Variante B: Automatisch in der Cloud (kein Windows noetig)
+
+Der GitHub-Actions-Workflow `.github/workflows/build-windows.yml` baut auf jedem Push automatisch eine `RapStudio.exe` (inklusive eingebettetem `ffmpeg.exe`) auf einem Windows-Runner.
+
+So holst du die fertige EXE:
+
+1. Auf GitHub den Reiter **Actions** oeffnen.
+2. Den letzten Lauf "Build Windows EXE" anklicken.
+3. Unter **Artifacts** liegt `RapStudio-Windows.zip` (~80 MB) -> herunterladen.
+4. Entpacken -> `RapStudio.exe` per WhatsApp / Drive / Mail teilen.
+
+Fuer eine richtige Versions-Veroeffentlichung Tag pushen, dann haengt der Workflow die EXE automatisch an einen GitHub-Release:
+
+```bat
+git tag v0.1.0
+git push origin v0.1.0
+```
 
 ## Bedienung
 

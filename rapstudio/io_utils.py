@@ -3,10 +3,31 @@ from __future__ import annotations
 
 import io
 import os
+import sys
 from typing import Tuple
 
 import numpy as np
 import soundfile as sf
+
+
+def _configure_pydub_ffmpeg():
+    """Wenn als PyInstaller-EXE laufend, pydub auf das mitgelieferte ffmpeg.exe zeigen."""
+    try:
+        from pydub import AudioSegment
+    except ImportError:
+        return
+    base = getattr(sys, "_MEIPASS", None) or os.path.dirname(os.path.abspath(sys.argv[0]))
+    candidate = os.path.join(base, "ffmpeg.exe")
+    if os.path.isfile(candidate):
+        AudioSegment.converter = candidate
+        AudioSegment.ffmpeg = candidate
+        # ffprobe kann fehlen; pydub faellt dann auf ffmpeg-only zurueck
+        probe = os.path.join(base, "ffprobe.exe")
+        if os.path.isfile(probe):
+            AudioSegment.ffprobe = probe
+
+
+_configure_pydub_ffmpeg()
 
 
 def load_audio(path: str, target_sr: int) -> Tuple[np.ndarray, int]:

@@ -1,0 +1,67 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches:
+      - claude/rap-recording-app-Y5DxS
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller
+
+      - name: Download ffmpeg (fuer MP3-Support)
+        run: |
+          $ErrorActionPreference = "Stop"
+          $url = "https://github.com/GyanD/codexffmpeg/releases/download/7.1/ffmpeg-7.1-essentials_build.zip"
+          Invoke-WebRequest -Uri $url -OutFile ffmpeg.zip
+          Expand-Archive ffmpeg.zip -DestinationPath ffmpeg_extract
+          $exe = Get-ChildItem ffmpeg_extract -Recurse -Filter ffmpeg.exe | Select-Object -First 1
+          New-Item -ItemType Directory -Force -Path ffmpeg_bin | Out-Null
+          Copy-Item $exe.FullName ffmpeg_bin\ffmpeg.exe
+        shell: pwsh
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller `
+            --noconfirm `
+            --windowed `
+            --onefile `
+            --name RapStudio `
+            --collect-submodules sounddevice `
+            --collect-data soundfile `
+            --add-binary "ffmpeg_bin/ffmpeg.exe;." `
+            run.py
+        shell: pwsh
+
+      - name: Upload EXE as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RapStudio-Windows
+          path: dist/RapStudio.exe
+          if-no-files-found: error
+
+      - name: Attach EXE to release (only on tag push)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/RapStudio.exe
